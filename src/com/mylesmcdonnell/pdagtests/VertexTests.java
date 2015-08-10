@@ -35,29 +35,6 @@ public class VertexTests {
         node.add_dependency(node2);
     }
 
-     /*@Test
-    TODO: public void RemoveRedundantDependencies()
-    {
-        var node = new Vertex(()=>Thread.Sleep(1));
-
-        var node2 = new Vertex(()=>Thread.Sleep(1));
-        var node3 = new Vertex(()=>Thread.Sleep(1));
-
-        node3.AddDependencies (node2, node);
-
-        Assert.AreEqual (2, node3.Dependencies.Count());
-
-        node3.RemoveRedundantDependencies ();
-
-        Assert.AreEqual (2, node3.Dependencies.Count());
-
-        node2.AddDependencies (node);
-
-        node3.RemoveRedundantDependencies ();
-
-        Assert.AreEqual (1, node3.Dependencies.Count());
-    }*/
-
     @Test
     public void DoNotAddRedundantDependency() throws CircularDependencyException
     {

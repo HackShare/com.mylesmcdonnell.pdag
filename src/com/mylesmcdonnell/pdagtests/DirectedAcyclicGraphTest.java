@@ -3,6 +3,7 @@ package com.mylesmcdonnell.pdagtests;
 import com.mylesmcdonnell.pdag.CircularDependencyException;
 import com.mylesmcdonnell.pdag.DirectedAcyclicGraph;
 import com.mylesmcdonnell.pdag.Vertex;
+import com.mylesmcdonnell.pdag.VertexTask;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,13 +49,10 @@ public class DirectedAcyclicGraphTest {
         Assert.assertEquals(_terminal, _graph.get_terminal_vertices()[0]);
     }
 
-    private class DoNada implements Runnable{
+    private class DoNada implements VertexTask{
         @Override
-        public void run() {
-            try {
-                Thread.sleep(1);
-            }
-            catch (InterruptedException ex) {}
+        public void run() throws Exception {
+            Thread.sleep(1);
         }
     }
 }

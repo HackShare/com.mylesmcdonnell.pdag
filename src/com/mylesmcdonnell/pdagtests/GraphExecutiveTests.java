@@ -1,9 +1,6 @@
 package com.mylesmcdonnell.pdagtests;
 
-import com.mylesmcdonnell.pdag.CircularDependencyException;
-import com.mylesmcdonnell.pdag.DirectedAcyclicGraph;
-import com.mylesmcdonnell.pdag.GraphExecutive;
-import com.mylesmcdonnell.pdag.Vertex;
+import com.mylesmcdonnell.pdag.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -89,6 +86,33 @@ public class GraphExecutiveTests {
     }
 
     @Test
+    public void GraphExecute_WithConcurrency_WithThrottle() throws
+            CircularDependencyException,
+            InterruptedException  {
+        MaxCount maxCount = new MaxCount();
+
+        Collection<Vertex> mid = new ArrayList<>();
+        Vertex node0 = new Vertex(new MaxCountTask(maxCount));
+        for(int i = 0;i<100;i++)
+            mid.add(new Vertex(new MaxCountTask(maxCount)));
+
+        for(Vertex v : mid)
+            v.add_dependency(node0);
+
+        mid.add(node0);
+
+        int maxConcurrency = 50;
+
+        GraphExecutive executive = new GraphExecutive(new DirectedAcyclicGraph(mid.toArray(new Vertex[0])), maxConcurrency);
+
+        executive.execute_and_wait();
+
+        Assert.assertEquals(0, executive.get_vertices_failed().size());
+
+        Assert.assertEquals(maxConcurrency, maxCount.get_max());
+    }
+
+    @Test
     public void GraphExecute_WithConcurrency_NoThrottle_VertexException() throws
             CircularDependencyException,
             InterruptedException  {
@@ -98,7 +122,7 @@ public class GraphExecutiveTests {
 
             Vertex node0 = new Vertex(new Task(1, record));
             Vertex node1 = new Vertex(new Task(2, record));
-            Vertex node2 = new Vertex(new Task(2, record));
+            Vertex node2 = new Vertex(new FailedTask());
             Vertex node3 = new Vertex(new Task(2, record));
             Vertex node4 = new Vertex(new Task(3, record));
 
@@ -114,10 +138,10 @@ public class GraphExecutiveTests {
 
             executive.execute_and_wait();
 
-            Assert.assertEquals(0, executive.get_vertices_failed().size());
+            Assert.assertEquals(2, executive.get_vertices_failed().size());
 
             Integer[] actual = record.get_ints();
-            Integer[] expected = {1, 2, 2, 2, 3};
+            Integer[] expected = {1, 2, 2};
 
             Assert.assertEquals(expected.length, actual.length);
 
@@ -130,7 +154,7 @@ public class GraphExecutiveTests {
         }
     }
 
-    private class Task implements Runnable {
+    private class Task implements VertexTask {
 
         private Integer _i;
         private Record _record;
@@ -147,22 +171,19 @@ public class GraphExecutiveTests {
         }
 
         @Override
-        public void run()  {
-            if (_pauseMs>0) {
-                try {
-                    Thread.sleep(_pauseMs);
-                }
-                catch(Exception ex){}
-            }
+        public void run() throws Exception  {
+            if (_pauseMs>0)
+                Thread.sleep(_pauseMs);
+
             _record.add(_i);
         }
     }
 
-    private class FailedTask implements Runnable {
+    private class FailedTask implements VertexTask {
 
         @Override
         public void run() throws Exception {
-            throw Exception();
+            throw new Exception();
         }
     }
 
@@ -179,35 +200,39 @@ public class GraphExecutiveTests {
         }
     }
 
-   /*public class MaxCount {
-        private readonly object
-        _lock=new
+    public class MaxCountTask implements VertexTask {
 
-        object();
+        private MaxCount _maxCount;
+
+        public MaxCountTask(MaxCount maxCount){
+
+            _maxCount = maxCount;
+        }
+
+        @Override
+        public void run() throws Exception {
+            _maxCount.inc();
+            Thread.sleep(250);
+            _maxCount.dec();
+        }
+    }
+
+    public class MaxCount {
 
         private int _current;
+        private int _max;
 
-        public void Inc() {
-            lock(_lock)
-            {
-                _current++;
-                Max = Math.Max(Max, _current);
-            }
+        public synchronized void inc() {
+            _current++;
+            _max = Math.max(_max, _current);
         }
 
-        public void Dec() {
-            lock(_lock)
-            {
-                _current--;
-            }
+        public synchronized void dec() {
+            _current--;
         }
 
-        public int Max
-
-        {
-            get;
-            private set ;
+        public int get_max() {
+            return _max;
         }
-    }*/
-
+    }
 }

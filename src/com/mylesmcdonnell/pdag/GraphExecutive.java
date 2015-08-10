@@ -79,6 +79,9 @@ public class GraphExecutive implements VertexExecutionScheduler {
             _verticesFailed.put(dependent, new Exception("Dependency Failed"));
             _verticesProcessed++;
         }
+
+        if (_verticesProcessed >= _allVerticesCount)
+            notify();
     }
 
     private void execute(Vertex vertex) {
@@ -102,7 +105,17 @@ public class GraphExecutive implements VertexExecutionScheduler {
 
         @Override
         public void run() {
-            _vertex.run();
+            boolean failure = false;
+            try {
+                _vertex.run();
+            }
+            catch (Exception exception){
+                failure = true;
+                _executive.process_post_vertex_execution_failure(_vertex, exception);
+            }
+
+            if (!failure)
+                _executive.process_post_vertex_execution_success(_vertex);
         }
     }
 }

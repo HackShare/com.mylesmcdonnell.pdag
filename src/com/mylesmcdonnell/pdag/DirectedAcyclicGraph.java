@@ -31,8 +31,6 @@ public class DirectedAcyclicGraph {
 
         _terminal = new Vertex[terminal.size()];
         terminal.toArray(_terminal);
-
-        //TODO: terminalVertex.RemoveRedundantDependencies();
     }
 
     public Vertex[] get_all_vertices() { return _all; }

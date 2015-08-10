@@ -6,13 +6,13 @@ import java.util.Collection;
 /**
  * Created by myles on 09/08/2015.
  */
-public class Vertex implements Runnable{
+public class Vertex implements VertexTask{
 
-    private VertexExecutionContext _task;
+    private VertexTask _task;
     private Collection<Vertex> _dependencies = new ArrayList<Vertex>();
     private Collection<Vertex> _dependents = new ArrayList<Vertex>();
 
-    public Vertex(VertexExecutionContext task) {
+    public Vertex(VertexTask task) {
 
         _task = task;
     }
@@ -55,22 +55,6 @@ public class Vertex implements Runnable{
         return _dependents;
     }
 
-    /*TODO : public void RemoveRedundantDependencies()
-    {
-        Collection<Vertex> redundants = new ArrayList<Vertex>();
-
-        for(Vertex dependency : _dependencies)
-
-
-        Dependencies.Where(dependency => Dependencies.FirstOrDefault(d => d != dependency && d.IsDependency(dependency)) != null).ToList();
-
-        for (Vertex redundancy : redundants)
-            _dependencies.remove (redundancy);
-
-        for (Vertex dependent : _dependencies)
-            dependent.RemoveRedundantDependencies ();
-    }*/
-
     private void CheckForCircularDependency(Collection<Vertex> dependencies) throws CircularDependencyException
     {
         if (dependencies.contains(this))
@@ -80,7 +64,7 @@ public class Vertex implements Runnable{
             CheckForCircularDependency(dependency.get_dependencies());
     }
 
-    public void run()
+    public void run() throws Exception
     {
         _task.run();
     }
