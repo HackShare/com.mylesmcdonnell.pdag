@@ -2,26 +2,19 @@ package com.mylesmcdonnell.pdag;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Created by myles on 09/08/2015.
  */
 public class Vertex implements Runnable{
 
-    private final ReadWriteLock _readWriteLock = new ReentrantReadWriteLock();
-    private final Lock _readLock = _readWriteLock.readLock();
-    private final Lock _writeLock = _readWriteLock.writeLock();
-
-    private Runnable _doWorkAction;
+    private VertexExecutionContext _task;
     private Collection<Vertex> _dependencies = new ArrayList<Vertex>();
     private Collection<Vertex> _dependents = new ArrayList<Vertex>();
 
-    public Vertex(Runnable doWorkAction) {
+    public Vertex(VertexExecutionContext task) {
 
-        _doWorkAction = doWorkAction;
+        _task = task;
     }
 
     public boolean is_dependency(Vertex vertex)
@@ -39,26 +32,19 @@ public class Vertex implements Runnable{
         return add_dependencies(arr);
     }
 
-    public Vertex add_dependencies(Vertex[] dependencies) throws CircularDependencyException {
-        _writeLock.lock();
-        try {
-            for (Vertex dependency : dependencies) {
+    public synchronized Vertex add_dependencies(Vertex[] dependencies) throws CircularDependencyException {
+        for (Vertex dependency : dependencies) {
 
-                if (dependency == this)
-                    throw new CircularDependencyException(dependency);
+            if (dependency == this)
+                throw new CircularDependencyException(dependency);
 
-                CheckForCircularDependency(dependency.get_dependencies());
+            CheckForCircularDependency(dependency.get_dependencies());
 
-                if (Extensions.is_dependency(_dependencies, dependency))
-                    return this;
+            if (Extensions.is_dependency(_dependencies, dependency))
+                return this;
 
-                 _dependencies.add(dependency);
-                dependency._dependents.add(this);
-            }
-        }
-        finally
-        {
-            _writeLock.unlock();
+             _dependencies.add(dependency);
+            dependency._dependents.add(this);
         }
 
         return this;
@@ -96,6 +82,6 @@ public class Vertex implements Runnable{
 
     public void run()
     {
-        _doWorkAction.run();
+        _task.run();
     }
 }
