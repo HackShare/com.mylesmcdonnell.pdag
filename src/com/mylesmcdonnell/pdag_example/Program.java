@@ -1,19 +1,17 @@
-# com.mylesmcdonnell.pdag
-A JVM component (written in Java) library for the concurrent execution of vertices in a directed acyclic graph.  A .NET version is also available here: [https://github.com/myles-mcdonnell/MPM.PDAG](https://github.com/myles-mcdonnell/MPM.PDAG)
+//   Copyright 2015 Myles McDonnell (mcdonnell.myles@gmail.com)
 
-Imagine a graph like so..
+//   Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
 
-<img src="https://dl.dropboxusercontent.com/u/30149716/github_content/PDAG%20README.png"/>
+//     http://www.apache.org/licenses/LICENSE-2.0
 
-..we can reason that A and B can be executed concurrently. C can be executed when A & B are complete, F can be executed when only B is complete and D & E can be excuted concurrently when C is complete. F may be executed concurrently with and/or A | C | D | E.
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
 
-MPM.PDAG provides a mechanism for building directed acyclic graphs to any level of complexity and will automatically determine the maximum level 
-of concurrency when executing the graph.  When building a graph an exception will be thrown if a circular reference is attempted and a concurrency throttle may
-be provided when executing a graph.  What action is performed when a vertex is executed is specified by passing an action to the vertex constructor.
-
-Although this code has been kicking around in my tool box for a few years only the simple use cases are complete.  There is work to be done around graph execution cancellation and a few other features, PR's are more than welcome.
-
-<pre>
 package com.mylesmcdonnell.pdag_example;
 
 import com.mylesmcdonnell.pdag.*;
@@ -61,4 +59,3 @@ public class Program {
         }
     }
 }
-</pre>
